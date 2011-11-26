@@ -16,22 +16,22 @@
 #
 require_once(dirname(dirname(__FILE__)).'/global.php');
 
-if (!array_key_exists('url', $_GET) || filter_var($_GET['url'], FILTER_VALIDATE_URL) === false) {
+if (!array_key_exists('url_id', $_GET) || filter_var($_GET['url_id'], FILTER_VALIDATE_INT) === false) {
 	header('HTTP/1.0 400 Bad Request');
 
 	?><html>
 <head>
-<title>Bad Request: no valid url specified</title>
+<title>Bad Request: no valid url id specified</title>
 </head>
 <body>
-<h1>Bad Request: no valid url specified</h1>
-<p>You must pass valid URL as 'url' parameter</p>
+<h1>Bad Request: no valid url id specified</h1>
+<p>You must pass valid URL id as 'url_id' parameter</p>
 </body></html>
-<?php 
+<?php
 	exit;
 }
 
-$query = sprintf("SELECT id, url, UNIX_TIMESTAMP(last_update) AS lu FROM urls WHERE urls.url = '%s'", mysql_real_escape_string($_GET['url']));
+$query = sprintf("SELECT id, url, UNIX_TIMESTAMP(last_update) AS lu FROM urls WHERE urls.id = ". mysql_real_escape_string($_GET['url_id']));
 $result = mysql_query($query);
 
 if (!$result) {

@@ -20,6 +20,7 @@ SetEnvIfNoCase Request_URI \.(?:gif|jpe?g|png|ico)$ no-gzip
 <IfModule mod_rewrite.c>
 SetEnv mod_rewrite On
 RewriteEngine On
+RewriteRule ^details/([0-9]+)/(.*)$ details/index.php?id=$1&url=$2 [NC,L]
 RewriteRule .					-	[E=URLVERSIONREWRITE:YES]
 RewriteCond %{REQUEST_FILENAME}			!-f
 RewriteRule ^(.*)\.(\d+)(_m_\d+)?\.([^\.]+)$	$1.$4	[L,QSA]

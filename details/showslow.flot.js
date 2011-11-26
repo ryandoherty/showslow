@@ -156,7 +156,7 @@ var SS = (function ($) {
 	// populate event lines
 	function _getEvents() {
 		$.ajax({
-			url: 'events2.php',
+			url: '/details/events2.php',
 			data: 'url=' + encodeURIComponent(url) + '&ver=' + encodeURIComponent(eventversion),
 			dataType: 'json',
 			cache: true,
@@ -175,10 +175,10 @@ var SS = (function ($) {
 		if (typeof(callback) !== 'function') { callback = false; }
 
 		$.ajax({
-			url: 'data2.php',
+			url: '/details/data2.php',
 			dataType: 'json',
 			cache: true,
-			data: 'url=' + encodeURIComponent(options.url) + '&provider=' + encodeURIComponent(options.provider) + '&metrics=' + encodeURIComponent(options.metrics) + '&format=json&ver=' + encodeURIComponent(flot_versions[options.provider]),
+			data: 'url_id=' + encodeURIComponent(options.url_id) + '&provider=' + encodeURIComponent(options.provider) + '&metrics=' + encodeURIComponent(options.metrics) + '&format=json&ver=' + encodeURIComponent(flot_versions[options.provider]),
 			error: function (jqXHR, textStatus, errorThrown) {
 				alert('There was a problem with the request:\n\n' + errorThrown + ' : ' + textStatus);
 				return;
@@ -269,7 +269,8 @@ var SS = (function ($) {
 					// loading custom metrics one by one
 					if (pid == 'custom') {
 						SS.getMetrics({
-							url: url,
+							url_id: url_id,
+                            url: url,
 							provider: pid,
 							metrics: default_metrics[pid][i],
 							callback: false
@@ -280,6 +281,7 @@ var SS = (function ($) {
 				if (pid != 'custom') {
 					SS.getMetrics({
 						url: url,
+                        url_id: url_id,
 						provider: pid,
 						metrics: default_metrics[pid].join(','),
 						callback: false

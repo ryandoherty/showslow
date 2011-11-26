@@ -1,4 +1,4 @@
-<?php 
+<?php
 require_once(dirname(dirname(dirname(__FILE__))).'/global.php');
 
 function updateUrlAggregates($url_id, $measurement_id)
@@ -70,7 +70,7 @@ if (array_key_exists('url', $_POST) && array_key_exists('stats', $_POST))
 	$url = validateURL($_POST['url']);
 ?><html><head><script>
 	if (confirm('Sucess: data is saved to Show Slow (<?php echo $showslow_base ?>)\nWould you like to open the resuls page?')) {
-		top.location = '<?php echo $showslow_base ?>details/?url=' + encodeURIComponent('<?php echo $url?>');
+		top.location = '<?php echo $showslow_base ?>details/' + encodeURIComponent(<?php echo $url_id;?>+'/' + encodeURIComponent('<?php echo $url?>');
 	}
 </script></head><body></body></html>
 <?php

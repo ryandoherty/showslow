@@ -1,8 +1,8 @@
-<?php 
+<?php
 require_once(dirname(dirname(__FILE__)).'/global.php');
 require_once(dirname(dirname(__FILE__)).'/users/users.php');
 
-if (!array_key_exists('url', $_GET) || ($url = filter_var($_GET['url'], FILTER_VALIDATE_URL)) === false) {
+if (!array_key_exists('id', $_GET) || ($id = filter_var($_GET['id'], FILTER_VALIDATE_INT)) === false) {
 ?><html>
 <head>
 <title>Error - no URL specified</title>
@@ -11,12 +11,12 @@ if (!array_key_exists('url', $_GET) || ($url = filter_var($_GET['url'], FILTER_V
 <h1>Error - no URL specified</h1>
 <p><a href="../">Go back</a> and pick the URL</p>
 </body></html>
-<?php 
+<?php
 return;
 }
 
 # building a query to select all beacon data in one swoop
-$query = "SELECT urls.id AS url_id, UNIX_TIMESTAMP(last_update) AS t, last_event_update, yslow2.details AS yslow_details";
+$query = "SELECT urls.url, urls.id AS url_id, UNIX_TIMESTAMP(last_update) AS t, last_event_update, yslow2.details AS yslow_details";
 
 foreach ($all_metrics as $provider_name => $provider) {
 	$query .= ",\n\t".$provider['table'].'_last_id, UNIX_TIMESTAMP('.$provider['table'].'.timestamp) AS '.$provider_name.'_timestamp';
@@ -34,9 +34,9 @@ foreach ($all_metrics as $provider_name => $provider) {
 	$query .= "\n\tLEFT JOIN ".$provider['table'].' ON urls.'.$provider['table'].'_last_id = '.$provider['table'].'.id';
 }
 
-$query .= "\nWHERE urls.url = '".mysql_real_escape_string($url)."'";
+$query .= "\nWHERE urls.id= ".mysql_real_escape_string($id);
 
-#echo $query; exit;
+//echo $query; exit;
 
 $result = mysql_query($query);
 
@@ -48,6 +48,7 @@ $row = mysql_fetch_assoc($result);
 $lastupdate = $row['t'];
 $eventupdate = $row['last_event_update'];
 $urlid = $row['url_id'];
+$url = $row['url'];
 $yslow2_last_id = $row['yslow2_last_id'];
 $pagespeed_last_id = $row['pagespeed_last_id'];
 $dynatrace_last_id = $row['dynatrace_last_id'];
@@ -141,7 +142,7 @@ if ($enableFlot) {
 	foreach ($all_metrics as $provider_name => $provider) {
 		if ($enabledMetrics[$provider_name] && !is_null($row[$provider_name.'_timestamp']))
 		{
-			$flot_versions[$provider_name] = $row[$provider_name.'_timestamp'];			
+			$flot_versions[$provider_name] = $row[$provider_name.'_timestamp'];
 
 			foreach ($provider['metrics'] as $section_name => $section) {
 				foreach ($section as $metric) {
@@ -182,6 +183,7 @@ if ($enableFlot) {
 <?php } ?>
 var url = <?php echo json_encode($url); ?>;
 var metrics = <?php echo json_encode($metrics); ?>;
+var url_id = <?php echo $id;?>;
 </script>
 <h2>Details for <a target="_blank" href="<?php echo htmlentities($url)?>" rel="nofollow"><?php echo htmlentities(ellipsis($url, 31)) ?></a></h2>
 <?php if (!is_null($addThisProfile)) {?>
@@ -522,7 +524,7 @@ if ($havemetrics)
 					}
 
 					if ($metric['type'] == BYTES) {
-						?><span title="<?php echo $value ?> bytes"><?php echo floor($value/1000) ?>KB</span><?php	
+						?><span title="<?php echo $value ?> bytes"><?php echo floor($value/1000) ?>KB</span><?php
 					} else {
 						echo $value.$metric_types[$metric['type']]['units'];
 					}
@@ -565,7 +567,7 @@ if ($havemetrics)
 				?><tr><td colspan="8" class="sectionname"><b><?php echo $section_name ?></b></td></tr><?php
 
 				$odd = true;
-				
+
 				foreach ($metrics as $metric) {
 					if ($odd) { ?><tr><?php }
 
@@ -587,7 +589,7 @@ if ($havemetrics)
 					$value = $row[$provider_name.'_'.$metric[1]];
 
 					if (is_null($value)) {
-						?><td colspan="3" class="na">n/a</td><?php	
+						?><td colspan="3" class="na">n/a</td><?php
 					} else {
 						if ($metric[2] == PERCENT_GRADE){
 							$pretty_score = prettyScore($value);
@@ -622,7 +624,7 @@ if ($havemetrics)
 							}
 
 							if ($metric[2] == BYTES) {
-								?><span title="<?php echo $value ?> bytes"><?php echo floor($value/1000) ?>KB</span><?php	
+								?><span title="<?php echo $value ?> bytes"><?php echo floor($value/1000) ?>KB</span><?php
 							} else {
 								echo $value.$metric_types[$metric[2]]['units'];
 							}
@@ -643,7 +645,7 @@ if ($havemetrics)
 		</table>
 		</div>
 		</fieldset>
-	<?php 
+	<?php
 		}
 	}
 }
@@ -652,21 +654,21 @@ if ($enabledMetrics['yslow'] && !is_null($row['yslow_timestamp'])) {
 ?>
 	<a name="yslow-table"/><h2>YSlow measurements history (<a href="data.php?ver=<?php echo urlencode($row['yslow_timestamp'])?>&url=<?php echo urlencode($url)?>">csv</a>)</h2>
 	<div id="measurementstable" class="measurementstable"></div>
-	<?php 
+	<?php
 }
 
 if ($enabledMetrics['pagespeed'] && !is_null($row['pagespeed_timestamp'])) {
 ?>
 	<a name="pagespeed-table"/><h2>Page Speed measurements history (<a href="data_pagespeed.php?ver=<?php echo urlencode($row['pagespeed_timestamp'])?>&url=<?php echo urlencode($url)?>">csv</a>)</h2>
 	<div id="ps_measurementstable" class="measurementstable"></div>
-<?php 
+<?php
 }
 
 if ($enabledMetrics['dynatrace'] && !is_null($row['dynatrace_timestamp'])) {
 ?>
 	<a name="dynatrace-table"/><h2>dynaTrace measurements history (<a href="data_dynatrace.php?ver=<?php echo urlencode($row['dynatrace_timestamp'])?>&url=<?php echo urlencode($url)?>">csv</a>)</h2>
 	<div id="dt_measurementstable" class="measurementstable"></div>
-<?php 
+<?php
 }
 
 if (count($pagetest) > 0) {
